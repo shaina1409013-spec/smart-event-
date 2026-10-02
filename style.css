@@ -1,0 +1,42 @@
+:root { --primary: #4f46e5; --bg: #f3f4f6; }
+* { box-sizing: border-box; }
+body { font-family: Arial, sans-serif; background: var(--bg); margin: 0; }
+
+/* Sirf login page ke liye */
+body.login-page { display: flex; justify-content: center;
+                  align-items: center; min-height: 100vh; }
+
+/* Shared */
+.card { background: #fff; padding: 30px; border-radius: 12px;
+        box-shadow: 0 4px 16px rgba(0,0,0,0.1); }
+.login-page .card { width: 340px; }
+h2 { margin-top: 0; color: var(--primary); }
+input[type="email"], input[type="password"], input[type="text"] {
+  width: 100%; padding: 10px; margin: 8px 0;
+  border: 1px solid #d1d5db; border-radius: 6px; }
+.btn { padding: 10px 16px; background: var(--primary); color: #fff;
+       border: none; border-radius: 6px; cursor: pointer; font-size: 15px; }
+.login-page .btn { width: 100%; }
+.error { color: #dc2626; font-size: 14px; min-height: 18px; }
+.hint { font-size: 12px; color: #6b7280; }
+.radio-row { margin: 10px 0; }
+
+/* Navbar (baaki pages me) */
+nav { background: var(--primary); padding: 14px 24px; display: flex; gap: 20px; }
+nav a { color: #fff; text-decoration: none; font-weight: bold; }
+.container { max-width: 1000px; margin: 24px auto; padding: 0 16px; }
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 16px;
+toolbar { display: flex; gap: 12px; margin-bottom: 16px; }
+.toolbar input { margin: 0; flex: 1; }
+.toolbar select { padding: 10px; border-radius: 6px; border: 1px solid #d1d5db; }
+.event-card { cursor: pointer; }
+.event-card h3 { margin-top: 0; }
+.event-card:hover { transform: translateY(-3px); }
+.badge { display: inline-block; padding: 4px 10px; border-radius: 20px; font-size: 13px; color: #fff; }
+.badge.green { background: #16a34a; }
+.badge.red { background: #dc2626; }
+}
+
+
+
+

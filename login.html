@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Login - Smart Event</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="login-page">
+  <div class="card">
+    <h2>Smart Event Login</h2>
+    <input type="email" id="email" placeholder="Email">
+    <input type="password" id="password" placeholder="Password">
+    <button class="btn" id="loginBtn" type="button">Login</button>
+    <p class="error" id="msg"></p>
+    <p class="hint">Student: student@test.com / 123456</p>
+  </div>
+
+  <script>
+    var USERS = [
+      { name: "Rahul", email: "student@test.com", password: "123456", role: "student" },
+      { name: "Admin", email: "admin@test.com", password: "123456", role: "admin" }
+    ];
+
+    document.getElementById("loginBtn").onclick = function () {
+      var email = document.getElementById("email").value.trim();
+      var pass = document.getElementById("password").value;
+      var msg = document.getElementById("msg");
+
+      var found = null;
+      for (var i = 0; i < USERS.length; i++) {
+        if (USERS[i].email === email && USERS[i].password === pass) found = USERS[i];
+      }
+
+      if (!found) { msg.textContent = "Email ya password galat hai"; return; }
+
+      localStorage.setItem("currentUser", JSON.stringify(found));
+      msg.style.color = "green";
+      msg.textContent = "Login ho gaya...";
+      window.location.href = "events.html";
+    };
+  </script>
+</body>
+</html>

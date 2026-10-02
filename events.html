@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Events - Smart Event</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <nav>
+    <a href="events.html">Events</a>
+    <a href="my-reg.html">My Registrations</a>
+    <a href="route.html">Venue Route</a>
+    <a href="login.html" onclick="localStorage.clear()">Logout</a>
+    <span id="userName" style="color:#fff; margin-left:auto;"></span>
+  </nav>
+
+  <div class="container">
+    <h2>All Events</h2>
+    <div class="toolbar">
+      <input type="text" id="search" placeholder="Search events...">
+      <select id="sort">
+        <option value="date">Date</option>
+        <option value="registrations">Popularity</option>
+        <option value="seatsLeft">Seats Left</option>
+        <option value="title">Name (A-Z)</option>
+      </select>
+    </div>
+    <div class="grid" id="eventGrid"></div>
+  </div>
+
+  <script src="mockdata.js"></script>
+  <script src="dsa.js"></script>
+  <script src="events.js"></script>
+</body>
+</html>
