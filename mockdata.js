@@ -2,7 +2,8 @@ const users = [
   { id: 1, name: "Rahul", email: "student@test.com", password: "123456", role: "student" },
   { id: 2, name: "Admin", email: "admin@test.com", password: "123456", role: "admin" }
 ];
-const events = [
+
+const defaultEvents = [
   { id: 1, title: "CodeSprint Hackathon", date: "2026-10-20", venue: "Auditorium", totalSeats: 100, seatsLeft: 12, registrations: 88 },
   { id: 2, title: "AI/ML Workshop", date: "2026-10-12", venue: "Computer Lab", totalSeats: 40, seatsLeft: 5, registrations: 35 },
   { id: 3, title: "Web Dev Bootcamp", date: "2026-11-02", venue: "Seminar Hall", totalSeats: 60, seatsLeft: 30, registrations: 30 },
@@ -12,3 +13,5 @@ const events = [
   { id: 7, title: "App Development Workshop", date: "2026-11-18", venue: "Computer Lab", totalSeats: 35, seatsLeft: 10, registrations: 25 },
   { id: 8, title: "Open Source Hackathon", date: "2026-12-01", venue: "Auditorium", totalSeats: 150, seatsLeft: 90, registrations: 60 }
 ];
+
+var events = JSON.parse(localStorage.getItem("events_data") || "null") || defaultEvents;

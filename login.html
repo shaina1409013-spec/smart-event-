@@ -37,7 +37,7 @@
       localStorage.setItem("currentUser", JSON.stringify(found));
       msg.style.color = "green";
       msg.textContent = "Login ho gaya...";
-      window.location.href = "events.html";
+      window.location.href = found.role === "admin" ? "admin.html" : "events.html";
     };
   </script>
 </body>

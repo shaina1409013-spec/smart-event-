@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Admin Dashboard</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    .tabs { display: flex; gap: 10px; margin-bottom: 16px; }
+    .tabs button { padding: 10px 18px; border: none; border-radius: 6px; cursor: pointer; background: #e5e7eb; }
+    .tabs button.active { background: #4f46e5; color: #fff; }
+    .form-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 10px; margin-bottom: 12px; }
+    .form-row input, .form-row select { padding: 10px; border: 1px solid #d1d5db; border-radius: 6px; margin: 0; width: 100%; }
+    table { width: 100%; border-collapse: collapse; margin-top: 12px; }
+    th, td { text-align: left; padding: 10px; border-bottom: 1px solid #e5e7eb; font-size: 14px; }
+    .small { padding: 6px 10px; font-size: 13px; margin-right: 4px; }
+    .danger { background: #dc2626; }
+    .hidden { display: none; }
+  </style>
+</head>
+<body>
+  <nav>
+    <a href="admin.html">Admin Dashboard</a>
+    <a href="login.html" onclick="localStorage.clear()">Logout</a>
+    <span id="userName" style="color:#fff; margin-left:auto;"></span>
+  </nav>
+
+  <div class="container">
+    <div class="tabs">
+      <button id="tabEv" class="active" onclick="showTab('ev')">Events</button>
+      <button id="tabReg" onclick="showTab('reg')">Registrations</button>
+    </div>
+
+    <!-- EVENTS TAB -->
+    <div id="evTab" class="card">
+      <h3 id="formTitle">Add Event</h3>
+      <div class="form-row">
+        <input type="text" id="title" placeholder="Event title">
+        <input type="date" id="date">
+        <select id="venue">
+          <option>Auditorium</option>
+          <option>Computer Lab</option>
+          <option>Seminar Hall</option>
+        </select>
+        <input type="number" id="seats" placeholder="Total seats" min="1">
+      </div>
+      <button class="btn" onclick="saveEvent()">Save Event</button>
+      <button class="btn small" style="background:#6b7280" onclick="resetForm()">Clear</button>
+      <p class="error" id="msg"></p>
+      <table>
+        <thead><tr><th>Title</th><th>Date</th><th>Venue</th><th>Seats</th><th>Action</th></tr></thead>
+        <tbody id="rows"></tbody>
+      </table>
+    </div>
+
+    <!-- REGISTRATIONS TAB -->
+    <div id="regTab" class="card hidden">
+      <h3>Registrations</h3>
+      <select id="evSelect" style="padding:10px; border-radius:6px; border:1px solid #d1d5db;" onchange="renderRegs()"></select>
+      <div id="regBox"></div>
+    </div>
+  </div>
+
+  <script src="mockdata.js"></script>
+  <script src="dsa.js"></script>
+  <script>
+    var user = JSON.parse(localStorage.getItem("currentUser"));
+    if (!user) window.location.href = "login.html";
+    if (user && user.role !== "admin") window.location.href = "events.html";   // student block
+    document.getElementById("userName").textContent = "Hi, " + user.name;
+
+    var editId = null;
+    function load(k) { return JSON.parse(localStorage.getItem(k) || "[]"); }
+    function save(k, v) { localStorage.setItem(k, JSON.stringify(v)); }
+    function persist() { localStorage.setItem("events_data", JSON.stringify(events)); }
+
+    function showTab(t) {
+      document.getElementById("evTab").classList.toggle("hidden", t !== "ev");
+      document.getElementById("regTab").classList.toggle("hidden", t !== "reg");
+      document.getElementById("tabEv").className = t === "ev" ? "active" : "";
+      document.getElementById("tabReg").className = t === "reg" ? "active" : "";
+      if (t === "reg") { fillSelect(); renderRegs(); }
+    }
+
+    // ---------- EVENTS ----------
+    function renderTable() {
+      var sorted = mergeSort(events, "date", true);          // DSA: merge sort
+      var html = "";
+      sorted.forEach(function (e) {
+        html += "<tr><td>" + e.title + "</td><td>" + e.date + "</td><td>" + e.venue + "</td><td>" + e.totalSeats + "</td>" +
+          "<td><button class='btn small' onclick='editEvent(" + e.id + ")'>Edit</button>" +
+          "<button class='btn small danger' onclick='deleteEvent(" + e.id + ")'>Delete</button></td></tr>";
+      });
+      document.getElementById("rows").innerHTML = html;
+    }
+
+    function resetForm() {
+      editId = null;
+      document.getElementById("formTitle").textContent = "Add Event";
+      document.getElementById("title").value = "";
+      document.getElementById("date").value = "";
+      document.getElementById("seats").value = "";
+      document.getElementById("msg").textContent = "";
+    }
+
+    function saveEvent() {
+      var title = document.getElementById("title").value.trim();
+      var date = document.getElementById("date").value;
+      var venue = document.getElementById("venue").value;
+      var seats = Number(document.getElementById("seats").value);
+      var msg = document.getElementById("msg");
+
+      if (!title || !date || !seats || seats < 1) { msg.textContent = "Saari details bharo"; return; }
+
+      if (editId !== null) {
+        var ev = events.find(function (e) { return e.id === editId; });
+        ev.seatsLeft = ev.seatsLeft + (seats - ev.totalSeats);
+        if (ev.seatsLeft < 0) ev.seatsLeft = 0;
+        ev.title = title; ev.date = date; ev.venue = venue; ev.totalSeats = seats;
+      } else {
+        var maxId = 0;
+        events.forEach(function (e) { if (e.id > maxId) maxId = e.id; });
+        events.push({ id: maxId + 1, title: title, date: date, venue: venue,
+                      totalSeats: seats, seatsLeft: seats, registrations: 0 });
+      }
+      persist(); resetForm(); renderTable();
+    }
+
+    function editEvent(id) {
+      var ev = events.find(function (e) { return e.id === id; });
+      editId = id;
+      document.getElementById("formTitle").textContent = "Edit Event";
+      document.getElementById("title").value = ev.title;
+      document.getElementById("date").value = ev.date;
+      document.getElementById("venue").value = ev.venue;
+      document.getElementById("seats").value = ev.totalSeats;
+      window.scrollTo(0, 0);
+    }
+
+    function deleteEvent(id) {
+      if (!confirm("Is event ko delete karna hai?")) return;
+      events = events.filter(function (e) { return e.id !== id; });
+      localStorage.removeItem("reg_" + id);
+      localStorage.removeItem("wait_" + id);
+      persist(); renderTable();
+    }
+
+    // ---------- REGISTRATIONS ----------
+    function fillSelect() {
+      var sel = document.getElementById("evSelect");
+      var old = sel.value;
+      sel.innerHTML = "";
+      events.forEach(function (e) { sel.innerHTML += "<option value='" + e.id + "'>" + e.title + "</option>"; });
+      if (old) sel.value = old;
+    }
+
+    function renderRegs() {
+      var id = Number(document.getElementById("evSelect").value);
+      var box = document.getElementById("regBox");
+      if (!id) { box.innerHTML = "<p>Koi event nahi hai</p>"; return; }
+
+      var confirmed = load("reg_" + id);
+      var queue = new Queue(load("wait_" + id));            // QUEUE
+
+      var html = "<h4>Confirmed (" + confirmed.length + ")</h4><table><tr><th>Email</th><th>Status</th></tr>";
+      confirmed.forEach(function (m) { html += "<tr><td>" + m + "</td><td>Confirmed</td></tr>"; });
+      html += "</table><h4>Waitlist (" + queue.size() + ")</h4><table><tr><th>Position</th><th>Email</th></tr>";
+      queue.items.forEach(function (m, i) { html += "<tr><td>#" + (i + 1) + "</td><td>" + m + "</td></tr>"; });
+      html += "</table>";
+      if (queue.size() > 0) html += "<br><button class='btn' onclick='promote(" + id + ")'>Promote first from waitlist</button>";
+      box.innerHTML = html;
+    }
+
+    function promote(id) {
+      var confirmed = load("reg_" + id);
+      var queue = new Queue(load("wait_" + id));
+      if (queue.size() === 0) return;
+      confirmed.push(queue.dequeue());                      // QUEUE: FIFO, sabse aage wala
+      save("reg_" + id, confirmed);
+      save("wait_" + id, queue.items);
+      renderRegs();
+    }
+
+    renderTable();
+  </script>
+</body>
+</html>
