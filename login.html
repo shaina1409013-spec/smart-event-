@@ -14,6 +14,7 @@
     <button class="btn" id="loginBtn" type="button">Login</button>
     <p class="error" id="msg"></p>
     <p class="hint">Student: student@test.com / 123456</p>
+    <p class="hint">Naya student? <a href="signup.html">Account banao</a></p>
   </div>
 
   <script>
@@ -21,6 +22,7 @@
       { name: "Rahul", email: "student@test.com", password: "123456", role: "student" },
       { name: "Admin", email: "admin@test.com", password: "123456", role: "admin" }
     ];
+    USERS = USERS.concat(JSON.parse(localStorage.getItem("users_data") || "[]"));
 
     document.getElementById("loginBtn").onclick = function () {
       var email = document.getElementById("email").value.trim();

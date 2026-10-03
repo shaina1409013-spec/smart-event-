@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Signup - Smart Event</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="login-page">
+  <div class="card">
+    <h2>Create Account</h2>
+    <input type="text" id="name" placeholder="Full name">
+    <input type="email" id="email" placeholder="Email">
+    <input type="password" id="password" placeholder="Password (min 6 characters)">
+    <input type="password" id="confirm" placeholder="Confirm password">
+    <button class="btn" id="signBtn" type="button">Sign Up</button>
+    <p class="error" id="msg"></p>
+    <p class="hint">Pehle se account hai? <a href="login.html">Login karo</a></p>
+  </div>
+
+  <script>
+    // Login page ke default users
+    var BASE = ["student@test.com", "admin@test.com"];
+
+    document.getElementById("signBtn").onclick = function () {
+      var name = document.getElementById("name").value.trim();
+      var email = document.getElementById("email").value.trim().toLowerCase();
+      var pass = document.getElementById("password").value;
+      var confirm = document.getElementById("confirm").value;
+      var msg = document.getElementById("msg");
+      msg.style.color = "#dc2626";
+
+      if (!name || !email || !pass || !confirm) { msg.textContent = "Saari details bharo"; return; }
+      if (email.indexOf("@") < 1) { msg.textContent = "Sahi email daalo"; return; }
+      if (pass.length < 6) { msg.textContent = "Password kam se kam 6 character ka ho"; return; }
+      if (pass !== confirm) { msg.textContent = "Dono password match nahi kar rahe"; return; }
+
+      var saved = JSON.parse(localStorage.getItem("users_data") || "[]");
+
+      // HASHING: Map me email daalke duplicate O(1) me check
+      var emailMap = new Map();
+      BASE.forEach(function (e) { emailMap.set(e, true); });
+      saved.forEach(function (u) { emailMap.set(u.email, true); });
+      if (emailMap.has(email)) { msg.textContent = "Ye email pehle se registered hai"; return; }
+
+      saved.push({ name: name, email: email, password: pass, role: "student" });
+      localStorage.setItem("users_data", JSON.stringify(saved));
+
+      msg.style.color = "green";
+      msg.textContent = "Account ban gaya! Login page pe ja rahe hain...";
+      setTimeout(function () { window.location.href = "login.html"; }, 1000);
+    };
+  </script>
+</body>
+</html>
