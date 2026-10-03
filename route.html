@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Venue Route</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    .route-row { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 16px; }
+    .route-row select { padding: 10px; border-radius: 6px; border: 1px solid #d1d5db; flex: 1; min-width: 160px; }
+    .path { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; margin: 12px 0; }
+    .node { background: #4f46e5; color: #fff; padding: 8px 14px; border-radius: 20px; font-size: 14px; }
+    .arrow { color: #6b7280; font-size: 18px; }
+    .alt { background: #f3f4f6; padding: 8px 12px; border-radius: 6px; margin: 6px 0; font-size: 14px; }
+  </style>
+</head>
+<body>
+  <nav>
+    <a href="events.html">Events</a>
+    <a href="my-reg.html">My Registrations</a>
+    <a href="route.html">Venue Route</a>
+    <a href="login.html" onclick="localStorage.clear()">Logout</a>
+    <span id="userName" style="color:#fff; margin-left:auto;"></span>
+  </nav>
+
+  <div class="container">
+    <h2>Venue Route</h2>
+    <div class="card">
+      <div class="route-row">
+        <select id="from"></select>
+        <select id="to"></select>
+        <button class="btn" id="goBtn" type="button">Find Route</button>
+      </div>
+      <div id="result"></div>
+    </div>
+  </div>
+
+  <script src="mockdata.js"></script>
+  <script src="dsa.js"></script>
+  <script>
+    var user = JSON.parse(localStorage.getItem("currentUser"));
+    if (!user) window.location.href = "login.html";
+    document.getElementById("userName").textContent = "Hi, " + user.name;
+
+    // Dropdown graph ke nodes se bharo
+    var places = Object.keys(campus);
+    var fromBox = document.getElementById("from");
+    var toBox = document.getElementById("to");
+    places.forEach(function (p) {
+      fromBox.innerHTML += "<option>" + p + "</option>";
+      toBox.innerHTML += "<option>" + p + "</option>";
+    });
+    toBox.selectedIndex = 3;
+
+    function drawPath(path) {
+      var html = "<div class='path'>";
+      for (var i = 0; i < path.length; i++) {
+        html += "<span class='node'>" + path[i] + "</span>";
+        if (i < path.length - 1) html += "<span class='arrow'>→</span>";
+      }
+      return html + "</div>";
+    }
+
+    document.getElementById("goBtn").onclick = function () {
+      var a = fromBox.value, b = toBox.value;
+      var out = document.getElementById("result");
+
+      if (a === b) { out.innerHTML = "<p>Start aur destination same hain.</p>"; return; }
+
+      var best = bfs(a, b);                       // BFS: shortest path
+      if (!best) { out.innerHTML = "<p>❌ No path found</p>"; return; }
+
+      var all = [];
+      dfsAll(a, b, [a], all);                     // DFS: saare routes
+
+      out.innerHTML =
+        "<h3>Shortest route (BFS)</h3>" + drawPath(best) +
+        "<p>🔢 Hops: " + (best.length - 1) + " &nbsp; 📏 Distance: " + pathDistance(best) + " m</p>" +
+        "<h3>Saare possible routes (DFS): " + all.length + "</h3>" +
+        all.map(function (p) {
+          return "<div class='alt'>" + p.join(" → ") + " (" + pathDistance(p) + " m)</div>";
+        }).join("");
+    };
+  </script>
+</body>
+</html>
