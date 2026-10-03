@@ -25,3 +25,12 @@ function searchEvents(list, query) {
   }
   return found;
 }
+// QUEUE (FIFO): waitlist ke liye
+class Queue {
+  constructor(items) { this.items = items || []; }
+  enqueue(x) { this.items.push(x); }
+  dequeue() { return this.items.shift(); }
+  position(x) { return this.items.indexOf(x) + 1; }
+  remove(x) { var i = this.items.indexOf(x); if (i > -1) this.items.splice(i, 1); }
+  size() { return this.items.length; }
+}

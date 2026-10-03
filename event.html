@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Event Detail</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <nav>
+    <a href="events.html">Events</a>
+    <a href="login.html" onclick="localStorage.clear()">Logout</a>
+    <span id="userName" style="color:#fff; margin-left:auto;"></span>
+  </nav>
+  <div class="container"><div class="card" id="detail"></div></div>
+
+  <script src="mockdata.js"></script>
+  <script src="dsa.js"></script>
+  <script>
+    var user = JSON.parse(localStorage.getItem("currentUser"));
+    if (!user) window.location.href = "login.html";
+    document.getElementById("userName").textContent = "Hi, " + user.name;
+
+    // HASHING: Map se event O(1) me
+    var eventMap = new Map();
+    events.forEach(function (e) { eventMap.set(e.id, e); });
+    var id = Number(new URLSearchParams(window.location.search).get("id"));
+    var ev = eventMap.get(id);
+
+    function load(k) { return JSON.parse(localStorage.getItem(k) || "[]"); }
+    function save(k, v) { localStorage.setItem(k, JSON.stringify(v)); }
+
+    function render() {
+      var box = document.getElementById("detail");
+      if (!ev) { box.innerHTML = "<p>Event nahi mila</p>"; return; }
+      var confirmed = load("reg_" + id);
+      var queue = new Queue(load("wait_" + id));
+      var seatsLeft = ev.seatsLeft - confirmed.length;
+      var status = "", btn = "";
+
+      if (confirmed.indexOf(user.email) > -1) {
+        status = "<span class='badge green'>Confirmed</span>";
+        btn = "<button class='btn' onclick='cancelReg()'>Cancel Registration</button>";
+      } else if (queue.position(user.email) > 0) {
+        status = "<span class='badge red'>Waitlisted - Position #" + queue.position(user.email) + "</span>";
+        btn = "<button class='btn' onclick='cancelReg()'>Leave Waitlist</button>";
+      } else if (seatsLeft > 0) {
+        btn = "<button class='btn' onclick='register()'>Register</button>";
+      } else {
+        btn = "<button class='btn' onclick='register()'>Join Waitlist</button>";
+      }
+
+      box.innerHTML =
+        "<h2>" + ev.title + "</h2>" +
+        "<p>📅 Date: " + ev.date + "</p>" +
+        "<p>📍 Venue: " + ev.venue + "</p>" +
+        "<p>🎟️ Total seats: " + ev.totalSeats + "</p>" +
+        "<p>✅ Seats left: " + (seatsLeft > 0 ? seatsLeft : 0) + "</p>" +
+        "<p>⏳ Waitlist size: " + queue.size() + "</p>" +
+        "<p>" + status + "</p>" + btn;
+    }
+
+    function register() {
+      var confirmed = load("reg_" + id);
+      var queue = new Queue(load("wait_" + id));
+      if (ev.seatsLeft - confirmed.length > 0) {
+        confirmed.push(user.email);
+        save("reg_" + id, confirmed);
+      } else {
+        queue.enqueue(user.email);
+        save("wait_" + id, queue.items);
+      }
+      render();
+    }
+
+    function cancelReg() {
+      var confirmed = load("reg_" + id);
+      var queue = new Queue(load("wait_" + id));
+      var i = confirmed.indexOf(user.email);
+      if (i > -1) {
+        confirmed.splice(i, 1);
+        if (queue.size() > 0) confirmed.push(queue.dequeue());
+      } else {
+        queue.remove(user.email);
+      }
+      save("reg_" + id, confirmed);
+      save("wait_" + id, queue.items);
+      render();
+    }
+
+    render();
+  </script>
+</body>
+</html>

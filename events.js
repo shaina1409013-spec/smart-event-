@@ -29,6 +29,8 @@ function render() {
       "<span class='badge " + (full ? "red" : "green") + "'>" +
       (full ? "Full – Waitlist open" : e.seatsLeft + " seats left") + "</span>";
     card.onclick = () => window.location.href = "event.html?id=" + e.id;
+    card.style.cursor = "pointer";
+    card.onclick = function () { window.location.href = "event.html?id=" + e.id; };
     grid.appendChild(card);
   });
 }
