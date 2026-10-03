@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>My Registrations</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <nav>
+    <a href="events.html">Events</a>
+    <a href="my-reg.html">My Registrations</a>
+    <a href="login.html" onclick="localStorage.clear()">Logout</a>
+    <span id="userName" style="color:#fff; margin-left:auto;"></span>
+  </nav>
+
+  <div class="container">
+    <h2>My Registrations</h2>
+    <div class="grid" id="list"></div>
+  </div>
+
+  <script src="mockdata.js"></script>
+  <script src="dsa.js"></script>
+  <script>
+    var user = JSON.parse(localStorage.getItem("currentUser"));
+    if (!user) window.location.href = "login.html";
+    document.getElementById("userName").textContent = "Hi, " + user.name;
+
+    function load(k) { return JSON.parse(localStorage.getItem(k) || "[]"); }
+    function save(k, v) { localStorage.setItem(k, JSON.stringify(v)); }
+
+    function render() {
+      var box = document.getElementById("list");
+      box.innerHTML = "";
+      var found = 0;
+
+      events.forEach(function (e) {
+        var confirmed = load("reg_" + e.id);
+        var queue = new Queue(load("wait_" + e.id));   // QUEUE
+        var isConfirmed = confirmed.indexOf(user.email) > -1;
+        var pos = queue.position(user.email);
+
+        if (!isConfirmed && pos === 0) return;   // is event me registered nahi
+        found++;
+
+        var status = isConfirmed
+          ? "<span class='badge green'>Confirmed</span>"
+          : "<span class='badge red'>Waitlisted - Position #" + pos + "</span>";
+
+        var card = document.createElement("div");
+        card.className = "card";
+        card.innerHTML =
+          "<h3>" + e.title + "</h3>" +
+          "<p>📅 " + e.date + "</p>" +
+          "<p>📍 " + e.venue + "</p>" +
+          "<p>" + status + "</p>" +
+          "<button class='btn' onclick='cancelReg(" + e.id + ")'>" +
+          (isConfirmed ? "Cancel Registration" : "Leave Waitlist") + "</button>";
+        box.appendChild(card);
+      });
+
+      if (found === 0) {
+        box.innerHTML = "<p>Abhi koi registration nahi hai. <a href='events.html'>Events dekho</a></p>";
+      }
+    }
+
+    function cancelReg(id) {
+      var confirmed = load("reg_" + id);
+      var queue = new Queue(load("wait_" + id));
+      var i = confirmed.indexOf(user.email);
+      if (i > -1) {
+        confirmed.splice(i, 1);
+        if (queue.size() > 0) confirmed.push(queue.dequeue());  // aage wala confirm
+      } else {
+        queue.remove(user.email);
+      }
+      save("reg_" + id, confirmed);
+      save("wait_" + id, queue.items);
+      render();
+    }
+
+    render();
+  </script>
+</body>
+</html>
